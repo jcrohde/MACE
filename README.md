@@ -35,12 +35,12 @@ files COPYING.LESSER and COPYING.
 
 MACE is written in QT 4.7.4. For compiling MACE on your computer you should have QT 4.7.4 or a higher version.
 
-Create a new directory "MACE" and put the header files, cpp files and the ui file in this directory. Then
+Create a new directory "~/MACE" and put the header files, cpp files and the ui file in this directory. Then
 
-      cd MACE
+      cd ~/MACE
       qmake -project
       qmake
-      make
+      make/gmake/nmake (depending on your OS)
 
 
 			Hints
