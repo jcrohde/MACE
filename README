@@ -40,7 +40,7 @@ Create a new directory "~/MACE" and put the header files, cpp files and the ui f
       cd ~/MACE
       qmake -project
       qmake
-      make/gmake/nmake (depending on your OS)
+      make/nmake/gmake (depending on your OS)
 
 
 			Hints
