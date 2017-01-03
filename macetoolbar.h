@@ -15,41 +15,31 @@ You should have received a copy of the GNU General Public License
 along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
-#ifndef HELPDIALOG_H
-#define HELPDIALOG_H
-#include <QDialog>
-#include <QTextBrowser>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include "data/stringfactory.h"
+#ifndef MACETOOLBAR_H
+#define MACETOOLBAR_H
 
-class helpDialog : public QDialog
+#include <QToolBar>
+#include <QMenu>
+#include <QToolButton>
+#include <QComboBox>
+#include "gui/intaction.h"
+
+class MaceToolBar : public QToolBar
 {
     Q_OBJECT
-
-private:
-    bool datType;
-
+    
 public:
+    QComboBox *selectionBox;
 
-    QPushButton *but;
-    QTextBrowser *browser;
-    QHBoxLayout *hbox;
-    QVBoxLayout *vbox;
-    stringFactory *factory;
-
-    helpDialog(stringFactory *fac);
-    ~helpDialog();
-    void setBrowser(QString str, int h, int w);
-
+    explicit MaceToolBar(QToolBar *parent = 0);
+    ~MaceToolBar();
+    
+private slots:
+    void setSelection(int index);
 
 signals:
-
-
-public slots:
-    void load(QUrl url);
+    void selectionCode(int code);
 
 };
 
-#endif // HELPDIALOG_H
+#endif // MACETOOLBAR_H

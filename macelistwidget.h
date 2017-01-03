@@ -15,41 +15,42 @@ You should have received a copy of the GNU General Public License
 along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
-#ifndef HELPDIALOG_H
-#define HELPDIALOG_H
-#include <QDialog>
-#include <QTextBrowser>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
+#ifndef MACELISTWIDGET_H
+#define MACELISTWIDGET_H
+
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QString>
+#include <QList>
 #include "data/stringfactory.h"
 
-class helpDialog : public QDialog
+
+class MaceListWidget : public QListWidget
 {
     Q_OBJECT
-
 private:
-    bool datType;
-
+    int state;
+    bool field;
+    
 public:
+    bool posChar;
 
-    QPushButton *but;
-    QTextBrowser *browser;
-    QHBoxLayout *hbox;
-    QVBoxLayout *vbox;
-    stringFactory *factory;
-
-    helpDialog(stringFactory *fac);
-    ~helpDialog();
-    void setBrowser(QString str, int h, int w);
+    explicit MaceListWidget(stringFactory *factory, QListWidget *parent = 0);
+    ~MaceListWidget();
 
 
-signals:
+    
+private:
+    stringFactory *itemSource;
 
+    void item_adder_general(int code, bool f);
 
 public slots:
-    void load(QUrl url);
+    void set_field(bool f);
+    void setNew(int code);
 
+signals:
+    void call_function(QString fctn);
 };
 
-#endif // HELPDIALOG_H
+#endif // MACELISTWIDGET_H

@@ -15,41 +15,15 @@ You should have received a copy of the GNU General Public License
 along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
-#ifndef HELPDIALOG_H
-#define HELPDIALOG_H
-#include <QDialog>
-#include <QTextBrowser>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include "data/stringfactory.h"
+#include "gui/macelineedit.h"
 
-class helpDialog : public QDialog
+MaceLineEdit::MaceLineEdit(QLineEdit *parent) :
+    QLineEdit(parent)
 {
-    Q_OBJECT
+    all = true;
+}
 
-private:
-    bool datType;
+MaceLineEdit::~MaceLineEdit()
+{
 
-public:
-
-    QPushButton *but;
-    QTextBrowser *browser;
-    QHBoxLayout *hbox;
-    QVBoxLayout *vbox;
-    stringFactory *factory;
-
-    helpDialog(stringFactory *fac);
-    ~helpDialog();
-    void setBrowser(QString str, int h, int w);
-
-
-signals:
-
-
-public slots:
-    void load(QUrl url);
-
-};
-
-#endif // HELPDIALOG_H
+}

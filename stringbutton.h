@@ -15,41 +15,36 @@ You should have received a copy of the GNU General Public License
 along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
-#ifndef HELPDIALOG_H
-#define HELPDIALOG_H
-#include <QDialog>
-#include <QTextBrowser>
-#include <QPushButton>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include "data/stringfactory.h"
+#ifndef STRINGBUTTON_H
+#define STRINGBUTTON_H
 
-class helpDialog : public QDialog
+#include <QPushButton>
+#include <QString>
+
+
+class StringButton : public QPushButton
 {
     Q_OBJECT
-
-private:
-    bool datType;
+    
+protected:
+    QString str;
 
 public:
 
-    QPushButton *but;
-    QTextBrowser *browser;
-    QHBoxLayout *hbox;
-    QVBoxLayout *vbox;
-    stringFactory *factory;
+    explicit StringButton(QWidget *parent = 0);
+    StringButton(const QString string, int height, int width, int fontsize, QWidget *parent = 0);
+    StringButton(const QString string, int height, int width, int fontsize, int c, QWidget *parent = 0);
+    ~StringButton();
 
-    helpDialog(stringFactory *fac);
-    ~helpDialog();
-    void setBrowser(QString str, int h, int w);
-
+    void setString(QString string);
+    
+private slots:
+        void set_signal();
 
 signals:
+        void sig_string(QString str);
 
-
-public slots:
-    void load(QUrl url);
 
 };
 
-#endif // HELPDIALOG_H
+#endif // STRINGBUTTON_H
