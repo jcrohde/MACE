@@ -1,140 +1,91 @@
 /*
-Copyright (C) 2012 Jan Christian Rohde
+Copyright (C) 2012-2014 Jan Christian Rohde
 
 This file is part of MACE.
 
-MACE is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+MACE is free software; you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
 
-MACE is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+MACE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with MACE. If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
 #include "algpoly.h"
 
-
-algPoly::algPoly(void){
+/*algPoly::algPoly(void){
   algCplx z;
-  mons.append(z);
+  mons.push_back(z);
 }
 
 
 algPoly::algPoly(algCplx d)
 {
-  mons.append(d);
+  mons.push_back(d);
 }
 
 
 void algPoly::expand(algCplx d){
-  mons.append(d);
+  mons.push_back(d);
 }
 
 
 int algPoly::degree(){
     algCplx zero;
-    if (mons.length()>1){return mons.length()-1;}
+    if (mons.size()>1){return mons.size()-1;}
     else{
         if (*mons.begin()==zero){return -1;}
         else {return 0;}
     }
 }
 
+QString algPoly::print() {
 
-QString algPoly::print(){
-  int i=1;
-  QString res, help;
-  algCplx d, zero;
-  rat ratZero, minusOne, one;
-  minusOne.count = minusOne.count.translate(1);
-  minusOne.positiv = false;
-  one.count = one.count.translate(1);
-  if (this ->degree() == -1){res = "0";}
-  else{
-  QList<algCplx>::Iterator iter = mons.begin();
-  d = *iter;
-  if (d!=zero){
-     res = d.print();
-     if (d.real != ratZero && d.imag != ratZero){
-         res.append(")");
-         res.prepend("(");
-     }
-  }
+  numPoly help = this->toNumPoly();
+  QString res = help.print(6);
 
-  iter++;
-
-  while(iter != mons.end()){
-      if ((d.real !=zero.real && d.imag == zero.imag && d.real.positiv)  ||
-          (d.real==zero.real && d.imag != zero.imag && d.imag.positiv) ||
-          (d.real!=zero.real && d.imag != zero.real)){
-              res.prepend("+");
-          }
-    d = *iter;
-    if(d.imag == zero.imag){
-      if (d.real != zero.real){
-        if (i == 1){res.prepend("x");}
-        else{
-          help = help.number(i);
-          res.prepend(help);
-          res.prepend("x^");
-        }
-        if ((d.real.count == zero.real.denom) && (d.real.denom == zero.real.denom) && !d.real.positiv){res.prepend("-");}
-        else if(d.real !=one){
-          help=d.print();
-          res.prepend(help);
-        }
-      }
-  }
-  else{
-      if (i == 1){res.prepend("x");}
-      else{
-        help = help.number(i);
-        res.prepend(help);
-        res.prepend("x^");
-      }
-      res.prepend(")");
-      help=d.print();
-      res.prepend(help);
-      res.prepend("(");
-  }
-    iter++;
-    i++;
-  }
-  }
   return res;
 }
 
-algPoly algPoly::mult(algCplx d){
-  QList<algCplx>::Iterator ptr = mons.begin();
-  algPoly res((*ptr)*d);
+QString algPoly::print(unsigned int precision){
 
-  ptr++;
+  numPoly help = this->toNumPoly();
+  QString res = help.print(precision);
+
+  return res;
+}
+
+void algPoly::mult(algCplx d){
+  std::list<algCplx>::iterator ptr = mons.begin();
+  algCplx help,h2;
   while(ptr != mons.end()){
-    res.expand((*ptr)*d);
+    help = *ptr;
+    multAlgC(&h2,&help,&d);
+    *ptr = h2;
     ptr++;
   }
-  return res;
 }
 
+void algPoly::set(int i) {
+    mons.clear();
+    algCplx z(i,0);
+    mons.push_back(z);
+}
 
 void algPoly::shift(int i){
     algCplx z;
+    int j;
 
-    if (i > 0){
-      for (int d =1 ; d<=i;++d){
-          mons.push_front(z);
-      }
-    }
+    for (j = 0; j < i; j++)
+         mons.push_front(z);
 }
 
 algCplx algPoly::leader(){
-    QList<algCplx>::Iterator ptr = mons.end();
+    std::list<algCplx>::iterator ptr = mons.end();
     ptr--;
 
     return *ptr;
@@ -152,4 +103,38 @@ void algPoly::rmLeader(){
      }
      return tmp;
  }
+
+ bool algPoly::putDown(algCplx &ac) {
+     algPoly tmp = normalize();
+     if (tmp.mons.size() == 1) {
+         ac = *mons.begin();
+         return true;
+     }
+     return false;
+ }
+
+ bool algPoly::putDown(MaceInt &mi) {
+     algCplx help;
+     if (this->putDown(help)) {
+         return (help.putDown(mi));
+     }
+     return false;
+ }
+
+ numPoly algPoly::toNumPoly(){
+     std::list<algCplx>::iterator ptr = mons.begin();
+     algCplx help = *ptr;
+     numCplx n = help.toNumCplx();
+     numPoly res(n);
+
+     ptr++;
+
+     while(ptr != mons.end()){
+         help = *ptr;
+         res.mons.push_back(help.toNumCplx());
+         ptr++;
+     }
+     return res;
+ }*/
+
 

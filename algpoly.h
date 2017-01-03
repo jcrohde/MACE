@@ -1,32 +1,33 @@
 /*
-Copyright (C) 2012 Jan Christian Rohde
+Copyright (C) 2012-2014 Jan Christian Rohde
 
 This file is part of MACE.
 
-MACE is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+MACE is free software; you can redistribute it and/or modify it under the terms of the
+GNU General Public License as published by the Free Software Foundation; either version 3
+of the License, or (at your option) any later version.
 
-MACE is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
+MACE is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public License
-along with MACE. If not, see <http://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with MACE; if not, see http://www.gnu.org/licenses.
 */
 
 #ifndef ALGPOLY_H
 #define ALGPOLY_H
-#include <QString>
-#include <QList>
-#include <algcplx.h>
 
-class algPoly
+/*#include <QString>
+#include <list>
+#include "math/variables/polynomial/numpoly.h"
+#include "math/variables/scalar/algcplx.h"
+#include "math/kernel/genpoly.h"
+
+class algPoly : public GenPoly
 {
 public:
-    QList<algCplx> mons;
+    std::list<algCplx> mons;
 
     algPoly();
     algPoly(algCplx d);
@@ -34,16 +35,18 @@ public:
     int degree();
     void expand(algCplx d);
     algCplx leader();
-    algPoly mult(algCplx d);
+    void mult(algCplx d);
     algPoly normalize();
     QString print();
+    QString print(unsigned int precision);
+    void set(int i);
     void shift(int i);
     void rmLeader();
 
-    friend bool operator<( algPoly p1, algPoly p2 ){
-      if(p1.degree()<p2.degree()){return true;}
-      else {return false;}
-    }
+    bool putDown(algCplx &ac);
+    bool putDown(MaceInt &mi);
+
+    numPoly toNumPoly();
 
     friend algPoly operator+( algPoly p1, algPoly p2 )
     {
@@ -57,8 +60,8 @@ public:
            p2=help;
        }
 
-       QList<algCplx>::Iterator iter1 = p1.mons.begin();
-       QList<algCplx>::Iterator iter2 = p2.mons.begin();
+       std::list<algCplx>::iterator iter1 = p1.mons.begin();
+       std::list<algCplx>::iterator iter2 = p2.mons.begin();
        algPoly res((*iter1)+(*iter2));
        iter1++;
        iter2++;
@@ -73,17 +76,17 @@ public:
          res.expand(*iter1);
          iter1++;
        }
+
        return res;
     }
 
     algPoly operator-( algPoly p2 ) const {
        algCplx d;
-       algCplx z(1,0);
-       z.real.positiv = false;
+       algCplx z(-1,0);
        algPoly tmp(*this);
 
 
-       QList<algCplx>::Iterator iter2 = p2.mons.begin();
+       std::list<algCplx>::iterator iter2 = p2.mons.begin();
        d= *iter2;
        d = d*z;
        algPoly q2(d);
@@ -98,6 +101,7 @@ public:
        }
 
        algPoly res = tmp+q2;
+
        return res;
    }
 
@@ -107,12 +111,12 @@ public:
           algPoly help(z), res(z);
           algCplx d;
           int count=0;
-          QList<algCplx>::Iterator iter2 = p2.mons.begin();
+          std::list<algCplx>::iterator iter2 = p2.mons.begin();
 
           while (iter2 != p2.mons.end()){
              help =p1;
              d= *iter2;
-             help = help.mult(d);
+             help.mult(d);
 
              if(count > 0){help.shift(count);}
              res=res+help;
@@ -120,6 +124,7 @@ public:
              count++;
              iter2++;
           }
+
           return res;
        }
 
@@ -130,6 +135,7 @@ public:
           algPoly tmp(*this);
           algCplx quot;
           p2 = p2.normalize();
+          p2.zeroTest();
           if (p2.degree() !=-1){
           int test;
 
@@ -138,7 +144,7 @@ public:
 
             //compute the res//////////////////////////////
             help=t;
-            help = help.mult(quot);
+            help.mult(quot);
 
             if(tmp.degree()>p2.degree()){help.shift(tmp.degree()-p2.degree());}
             res =res+help;
@@ -161,27 +167,64 @@ public:
           algPoly tmp(*this);
           algCplx w;
 
-          h = tmp/p2;
-          help = h*p2;
+          help = tmp/p2;
+          help = help*p2;
           help = tmp-help;
 
           help = help.normalize();
           return help;
        }
 
-       bool operator>(int k ) const {
-           algPoly tmp(*this);
-           if((tmp.degree()+1)>k){return true;}
+
+       friend bool operator<( algPoly p1, algPoly p2 ){
+           if(p1.degree()<p2.degree()){return true;}
            else {return false;}
        }
 
+       bool operator>(algPoly p2 ) const {
+           algPoly tmp(*this);
+           if(tmp.degree()>p2.degree()){return true;}
+           else {return false;}
+       }
+
+       bool operator==(algPoly b){
+           algPoly a(*this);
+           bool answer = true;
+           if (a.degree() != b.degree()){answer = false;}
+           else{
+               std::list<algCplx>::iterator iter1 = a.mons.begin();
+               std::list<algCplx>::iterator iter2 = b.mons.begin();
+
+               while (answer && iter1 != a.mons.end()){
+                   if (*iter1 != *iter2) answer = false;
+                   iter1++;
+                   iter2++;
+               }
+           }
+           return answer;
+       }
+
+       bool operator!=(algPoly b){
+           algPoly a(*this);
+           return !(a == b);
+       }
+
+       bool operator<=(algPoly b){
+           algPoly a(*this);
+           return (a.degree()<=b.degree());
+       }
+
+       bool operator>=(algPoly b){
+           algPoly a(*this);
+           return (a.degree()>=b.degree());
+       }
 
        algPoly operator-() const {
-           algCplx z(1,0);
-           z.real.positiv = false;
+           algCplx z(-1,0);
            algPoly tmp(*this);
            tmp.mult(z);
            return tmp;
        }
-};
-#endif // algPoly_H
+};*/
+
+#endif // ALGPOLY_H
